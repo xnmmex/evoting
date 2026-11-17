@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta http-equiv="refresh" content="10">
+
+    <title>Quick Count - E-Voting TPS</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f1f5f9;
+            margin: 0;
+            padding: 20px;
+            color: #1e293b;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: auto;
+        }
+
+        .header {
+            background: #172554;
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            margin: 0 0 8px;
+        }
+
+        .header p {
+            margin: 0;
+            color: #bfdbfe;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(
+                auto-fit, minmax(180px, 1fr)
+            );
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px #00000010;
+        }
+
+        .card h3 {
+            color: #64748b;
+            font-size: 14px;
+            margin: 0 0 12px;
+        }
+
+        .number {
+            font-size: 30px;
+            font-weight: bold;
+        }
+
+        .candidate {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px #00000010;
+        }
+
+        .candidate-header {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .bar-bg {
+            background: #e2e8f0;
+            height: 18px;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .bar {
+            height: 100%;
+            background: #2563eb;
+            border-radius: 20px;
+            transition: width 0.5s;
+        }
+
+        .percentage {
+            font-size: 25px;
+            font-weight: bold;
+            margin-top: 12px;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 12px 20px;
+            background: #172554;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .notice {
+            color: #92400e;
+            background: #fef3c7;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 13px;
+        }
+
+        @media(max-width: 500px) {
+            body {
+                padding: 12px;
+            }
+
+            .number {
+                font-size: 25px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="header">
+        <h1>QUICK COUNT TPS</h1>
+        <p>Dashboard Perhitungan Suara E-Voting</p>
+        <p>Data diperbarui otomatis setiap 10 detik</p>
+    </div>
+
+    <div class="cards">
+
+        <div class="card">
+            <h3>TOTAL SUARA MASUK</h3>
+            <div class="number">{{ total_votes }}</div>
+        </div>
+
+        <div class="card">
+            <h3>TOTAL DPT</h3>
+            <div class="number">{{ total_dpt }}</div>
+        </div>
+
+        <div class="card">
+            <h3>SUDAH MENCOBLOS</h3>
+            <div class="number">{{ total_voted }}</div>
+        </div>
+
+        <div class="card">
+            <h3>PARTISIPASI</h3>
+            <div class="number">{{ participation }}%</div>
+        </div>
+
+    </div>
+
+    <h2>HASIL PEROLEHAN SUARA</h2>
+
+    {% for candidate in results %}
+
+    <div class="candidate">
+
+        <div class="candidate-header">
+            <span>{{ candidate.name }}</span>
+            <span>{{ candidate.total_votes }} Suara</span>
+        </div>
+
+        <div class="bar-bg">
+            <div class="bar"
+                 style="width: {{ candidate.percentage }}%">
+            </div>
+        </div>
+
+        <div class="percentage">
+            {{ candidate.percentage }}%
+        </div>
+
+    </div>
+
+    {% endfor %}
+
+    <div class="notice">
+        <strong>PERHATIAN:</strong>
+        Hasil ini merupakan hitungan sementara dari database
+        aplikasi. Hasil ini bukan penetapan hasil resmi pemilihan.
+    </div>
+
+    <a href="{{ url_for('admin') }}" class="button">
+        KEMBALI KE DASHBOARD ADMIN
+    </a>
+
+    <a href="{{ url_for('admin_logout') }}" class="button">
+        LOGOUT
+    </a>
+
+</div>
+
+</body>
+</html>

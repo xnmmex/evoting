@@ -1,0 +1,273 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verifikasi Pemilih - TPS Digital</title>
+
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: #eef2f5;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+            background: white;
+            padding: 30px;
+            border-radius: 14px;
+            box-shadow: 0 4px 18px rgba(0,0,0,0.08);
+        }
+
+        h1 {
+            text-align: center;
+            color: #1e293b;
+            font-size: 24px;
+            margin: 0 0 8px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 28px;
+        }
+
+        .icon {
+            text-align: center;
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .alert {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 18px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .label {
+            display: block;
+            font-weight: bold;
+            color: #334155;
+            margin-bottom: 10px;
+        }
+
+        .token-input {
+            width: 100%;
+            padding: 15px;
+            font-size: 26px;
+            text-align: center;
+            letter-spacing: 7px;
+            text-transform: uppercase;
+            font-weight: bold;
+            border: 2px solid #cbd5e1;
+            border-radius: 9px;
+            outline: none;
+        }
+
+        .token-input:focus {
+            border-color: #2563eb;
+        }
+
+        .btn {
+            width: 100%;
+            border: none;
+            padding: 15px;
+            border-radius: 9px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
+        .btn-submit {
+            background: #16a34a;
+            color: white;
+        }
+
+        .btn-submit:hover { background: #15803d; }
+
+        .btn-scan {
+            background: #2563eb;
+            color: white;
+        }
+
+        .btn-scan:hover { background: #1d4ed8; }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #94a3b8;
+            margin: 24px 0;
+            font-size: 13px;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: "";
+            height: 1px;
+            background: #e2e8f0;
+            flex: 1;
+        }
+
+        #reader {
+            width: 100%;
+            margin-top: 18px;
+            display: none;
+            overflow: hidden;
+            border-radius: 10px;
+        }
+
+        .info {
+            background: #f1f5f9;
+            color: #475569;
+            padding: 13px;
+            border-radius: 8px;
+            font-size: 12px;
+            text-align: center;
+            margin-top: 22px;
+            line-height: 1.6;
+        }
+
+        .footer {
+            text-align: center;
+            font-size: 12px;
+            color: #94a3b8;
+            margin-top: 20px;
+        }
+    </style>
+
+    <script src="https://unpkg.com/html5-qrcode"></script>
+</head>
+
+<body>
+    <div class="container">
+
+        <div class="icon">🗳️</div>
+
+        <h1>VERIFIKASI PEMILIH</h1>
+        <p class="subtitle">
+            Pemilihan Kelurahan - TPS Digital
+        </p>
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form action="/verify-token" method="POST" id="tokenForm">
+
+            <label class="label" for="token">
+                Masukkan Kode Token Pemilih
+            </label>
+
+            <input
+                type="text"
+                id="token"
+                name="token"
+                class="token-input"
+                placeholder="XXXXXX"
+                maxlength="6"
+                minlength="6"
+                pattern="[A-Za-z0-9]{6}"
+                autocomplete="off"
+                required
+            >
+
+            <button type="submit" class="btn btn-submit">
+                VERIFIKASI TOKEN
+            </button>
+
+        </form>
+
+        <div class="divider">ATAU SCAN QR CODE</div>
+
+        <button
+            type="button"
+            class="btn btn-scan"
+            onclick="mulaiScan()"
+            id="scanButton">
+            📷 SCAN QR CODE
+        </button>
+
+        <div id="reader"></div>
+
+        <div class="info">
+            Masukkan token yang diberikan panitia atau pindai
+            QR Code pemilih untuk melanjutkan ke halaman surat suara.
+            Setiap token hanya dapat digunakan satu kali.
+        </div>
+
+        <div class="footer">
+            Sistem Simulasi E-Voting TPS
+        </div>
+
+    </div>
+
+    <script>
+        let scanner = null;
+
+        function mulaiScan() {
+            const reader = document.getElementById("reader");
+            const button = document.getElementById("scanButton");
+
+            if (typeof Html5QrcodeScanner === "undefined") {
+                alert("Modul pemindai QR belum berhasil dimuat. Periksa koneksi internet.");
+                return;
+            }
+
+            reader.style.display = "block";
+            button.disabled = true;
+            button.textContent = "PEMINDAI AKTIF";
+
+            scanner = new Html5QrcodeScanner(
+                "reader",
+                {
+                    fps: 10,
+                    qrbox: { width: 220, height: 220 }
+                },
+                false
+            );
+
+            scanner.render(
+                function(decodedText) {
+                    // QR Code harus berisi token 6 karakter.
+                    const token = decodedText.trim();
+
+                    if (/^[A-Za-z0-9]{6}$/.test(token)) {
+                        document.getElementById("token").value = token;
+
+                        scanner.clear().then(function() {
+                            document.getElementById("tokenForm").submit();
+                        });
+                    } else {
+                        alert("QR Code tidak berisi token pemilih yang valid.");
+                    }
+                },
+                function(errorMessage) {
+                    // Kesalahan pembacaan sementara diabaikan.
+                }
+            );
+        }
+    </script>
+
+</body>
+</html>

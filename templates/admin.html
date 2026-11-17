@@ -1,0 +1,341 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Meja Panitia TPS</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f8fafc;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: #1e293b;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .flex {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .col {
+            flex: 1;
+            min-width: 300px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .alert {
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .alert-success {
+            background: #22c55e;
+            color: white;
+        }
+
+        .alert-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .alert-info {
+            background: #3b82f6;
+            color: white;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            border: 1px solid #e2e8f0;
+            padding: 8px 12px;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        th {
+            background: #334155;
+            color: white;
+        }
+
+        .badge {
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .badge-voted {
+            background: #ef4444;
+            color: white;
+        }
+
+        .badge-ready {
+            background: #22c55e;
+            color: white;
+        }
+
+        .qr-info {
+            background: #f1f5f9;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid #2563eb;
+            margin-bottom: 20px;
+            font-size: 14px;
+            overflow-wrap: anywhere;
+        }
+
+        .quick-count-btn {
+            background: #172554;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        .quick-count-btn:hover {
+            background: #1e40af;
+        }
+
+        .table-scroll {
+            max-height: 220px;
+            overflow-y: auto;
+            overflow-x: auto;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .col {
+                min-width: 0;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+
+    <!-- HEADER -->
+    <div class="header">
+        <h2 style="margin:0;">MEJA REGISTRASI TPS KELURAHAN</h2>
+
+        <a href="{{ url_for('admin_logout') }}"
+           style="color:#f8fafc; text-decoration:none;
+           font-size:14px; background:#475569;
+           padding:6px 12px; border-radius:6px;">
+            Logout
+        </a>
+    </div>
+
+    <!-- LINK BILIK SUARA -->
+    <div class="qr-info">
+        <b>Link Akses Bilik Suara (Gunakan IP ini untuk membuat QR Code):</b>
+        <br>
+        <code style="font-size:18px; color:#2563eb; font-weight:bold;">
+            {{ access_url }}
+        </code>
+    </div>
+
+    <!-- PESAN NOTIFIKASI -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="flex">
+
+        <!-- KOLOM REGISTRASI -->
+        <div class="col">
+
+            <h3 style="margin-top:0;">
+                1. Verifikasi NIK & Ambil Token
+            </h3>
+
+            <form action="{{ url_for('generate_token_nik') }}" method="POST">
+                <label style="font-size:14px;">
+                    Masukkan NIK KTP Warga:
+                </label>
+
+                <br>
+
+                <input
+                    type="text"
+                    name="nik"
+                    placeholder="Contoh: 320101..."
+                    maxlength="16"
+                    required
+                    style="width:100%; padding:10px; margin:8px 0;
+                    font-size:16px; border:1px solid #cbd5e1;
+                    border-radius:6px; box-sizing:border-box;"
+                >
+
+                <button
+                    type="submit"
+                    style="width:100%; padding:12px;
+                    background:#2563eb; color:white;
+                    border:none; border-radius:6px;
+                    font-weight:bold; cursor:pointer;">
+                    CEK NIK & BUAT TOKEN
+                </button>
+            </form>
+
+            <hr style="margin:25px 0; border:0; border-top:1px solid #e2e8f0;">
+
+            <h3>2. Tambah Warga ke DPT</h3>
+
+            <form action="{{ url_for('add_dpt') }}" method="POST">
+
+                <input
+                    type="text"
+                    name="nik"
+                    placeholder="NIK (16 Digit)"
+                    maxlength="16"
+                    required
+                    style="width:100%; padding:8px;
+                    margin-bottom:8px; border:1px solid #cbd5e1;
+                    border-radius:6px; box-sizing:border-box;"
+                >
+
+                <input
+                    type="text"
+                    name="name"
+                    placeholder="Nama Lengkap Warga"
+                    required
+                    style="width:100%; padding:8px;
+                    margin-bottom:8px; border:1px solid #cbd5e1;
+                    border-radius:6px; box-sizing:border-box;"
+                >
+
+                <button
+                    type="submit"
+                    style="width:100%; padding:10px;
+                    background:#16a34a; color:white;
+                    border:none; border-radius:6px;
+                    font-weight:bold; cursor:pointer;">
+                    + Tambah ke DPT
+                </button>
+
+            </form>
+        </div>
+
+        <!-- KOLOM DATA DPT DAN HASIL -->
+        <div class="col">
+
+            <h3 style="margin-top:0;">
+                Total Partisipasi:
+                {{ total_voted }} / {{ total_dpt }} Pemilih
+            </h3>
+
+            <h4>Hasil Rekapitulasi Sementara:</h4>
+
+            <ul>
+                {% for r in results %}
+                    <li style="font-size:15px; margin-bottom:4px;">
+                        <b>{{ r.name }}</b>:
+                        <span style="color:#2563eb; font-weight:bold;">
+                            {{ r.total_votes }} Suara
+                        </span>
+                    </li>
+                {% endfor %}
+            </ul>
+
+            <h4 style="margin-top:20px;">
+                Daftar Pemilih Tetap (DPT):
+            </h4>
+
+            <!-- TABEL DPT -->
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>NIK</th>
+                            <th>Nama</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for v in voters %}
+                            <tr>
+                                <td>
+                                    <code>
+                                        {{ v.nik[:6] }}********{{ v.nik[-2:] }}
+                                    </code>
+                                </td>
+
+                                <td>{{ v.name }}</td>
+
+                                <td>
+                                    {% if v.is_voted %}
+                                        <span class="badge badge-voted">
+                                            Sudah Memilih
+                                        </span>
+                                    {% else %}
+                                        <span class="badge badge-ready">
+                                            Belum Memilih
+                                        </span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- TOMBOL QUICK COUNT -->
+            <a href="{{ url_for('quick_count') }}"
+               class="quick-count-btn">
+                📊 LIHAT QUICK COUNT
+            </a>
+
+        </div>
+    </div>
+</div>
+</body>
+</html>
