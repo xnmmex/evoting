@@ -93,22 +93,37 @@ def init_db():
             ("02. AJAY", "KAMARUNG", "calon2.jpg")
         )
 
+        cursor.execute(
+            "INSERT INTO candidates (name, vision, photo) VALUES (?, ?, ?)",
+            ("03. ????", "KAMARUNG", "calon3.jpg")
+        )
+
+        cursor.execute(
+            "INSERT INTO candidates (name, vision, photo) VALUES (?, ?, ?)",
+            ("04. MAMAN ROHMANSYAH", "KAMARUNG", "calon4.jpg")
+        )
+
+        cursor.execute(
+            "INSERT INTO candidates (name, vision, photo) VALUES (?, ?, ?)",
+            ("05. ????", "KAMARUNG", "calon3.jpg")
+        )
+
     cursor.execute("SELECT COUNT(*) FROM voters")
 
     if cursor.fetchone()[0] == 0:
         cursor.execute(
             "INSERT INTO voters (nik, name) VALUES (?, ?)",
-            ("3201012304900001", "Siti Rahmawati")
+            ("32123", "Siti Rahmawati")
         )
 
         cursor.execute(
             "INSERT INTO voters (nik, name) VALUES (?, ?)",
-            ("3201011508850002", "Bambang Hermawan")
+            ("32121", "Bambang Hermawan")
         )
 
         cursor.execute(
             "INSERT INTO voters (nik, name) VALUES (?, ?)",
-            ("3201010101950003", "Eko Prasetyo")
+            ("32122", "Eko Prasetyo")
         )
 
     conn.commit()
