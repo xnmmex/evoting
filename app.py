@@ -443,31 +443,55 @@ def admin_logout():
 # DASHBOARD ADMIN
 # ==================================================
 
+
 @app.route("/admin")
 @admin_required
 def admin():
     conn = get_db_connection()
 
     try:
+        # Mengambil hasil perolehan suara setiap calon
         results = conn.execute("""
-            SELECT c.id, c.name, COUNT(v.id) AS total_votes
+            SELECT
+                c.id,
+                c.name,
+                COUNT(v.id) AS total_votes
             FROM candidates c
             LEFT JOIN votes v ON c.id = v.candidate_id
-            GROUP BY c.id
+            GROUP BY c.id, c.name
+            ORDER BY c.id ASC
         """).fetchall()
 
-        voters = conn.execute(
-            "SELECT * FROM voters ORDER BY name ASC"
-        ).fetchall()
+        # Mengambil data pemilih
+        voter_rows = conn.execute("""
+            SELECT nik, name, token, is_voted
+            FROM voters
+            ORDER BY name ASC
+        """).fetchall()
 
+        # Mengubah status is_voted menjadi Boolean
+        voters = []
+
+        for row in voter_rows:
+            voters.append({
+                "nik": row["nik"],
+                "name": row["name"],
+                "token": row["token"],
+                "is_voted": bool(row["is_voted"])
+            })
+
+        # Menghitung total pemilih
         total_dpt = len(voters)
 
-        total_voted = conn.execute(
-            "SELECT COUNT(*) FROM voters WHERE is_voted = 1"
-        ).fetchone()[0]
+        # Menghitung jumlah pemilih yang sudah memilih
+        total_voted = conn.execute("""
+            SELECT COUNT(*)
+            FROM voters
+            WHERE is_voted = 1
+        """).fetchone()[0]
 
-        server_ip = get_local_ip()
-        access_url = f"http://{server_ip}:5000"
+        # Alamat akses aplikasi online
+        access_url = "https://nfs30.pythonanywhere.com"
 
         return render_template(
             "admin.html",
@@ -480,7 +504,6 @@ def admin():
 
     finally:
         conn.close()
-
 
 # ==================================================
 # TAMBAH DPT
